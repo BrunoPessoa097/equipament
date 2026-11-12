@@ -3,8 +3,10 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  // await app.listen(process.env.PORT ?? 3000);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Equipament')
     .setDescription('Todas as rotas da API de Equipament')
