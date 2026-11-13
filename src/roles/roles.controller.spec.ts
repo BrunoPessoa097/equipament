@@ -1,12 +1,3 @@
-jest.mock('@nestjs/swagger', () => ({
-  ApiTags: () => () => {},
-  ApiOperation: () => () => {},
-  ApiBody: () => () => {},
-  ApiResponse: () => () => {},
-  ApiParam: () => () => {},
-  PartialType: (classRef: new () => unknown) => classRef,
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   ConflictException,
