@@ -24,7 +24,7 @@ export class RolesService {
         skip,
         take,
         orderBy: { id: 'asc' },
-        omit: { createdAt: true, updateAt: true },
+        omit: { createdAt: true },
       }),
       this.prisma.roles.count(),
     ]);
@@ -45,7 +45,7 @@ export class RolesService {
       where: {
         id,
       },
-      omit: { createdAt: true, updateAt: true },
+      omit: { createdAt: true, updatedAt: true },
     });
   }
 
@@ -57,10 +57,8 @@ export class RolesService {
       where: {
         id,
       },
-      data: {
-        updateRoleDto,
-      },
-      omit: { createdAt: true, updateAt: true },
+      data: updateRoleDto,
+      omit: { createdAt: true, updatedAt: true },
     });
   }
 
