@@ -277,7 +277,7 @@ describe('RolesService', () => {
         skip: 0,
         take: 10,
         orderBy: { id: 'asc' },
-        omit: { createdAt: true, updateAt: true },
+        omit: { createdAt: true },
       });
     });
 
@@ -291,7 +291,7 @@ describe('RolesService', () => {
         skip: 5,
         take: 5,
         orderBy: { id: 'asc' },
-        omit: { createdAt: true, updateAt: true },
+        omit: { createdAt: true },
       });
     });
 
@@ -399,7 +399,7 @@ describe('RolesService', () => {
       expect(mockPrismaService.roles.findFirst).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.roles.findFirst).toHaveBeenCalledWith({
         where: { id: 1 },
-        omit: { createdAt: true, updateAt: true },
+        omit: { createdAt: true, updatedAt: true },
       });
     });
 
@@ -411,7 +411,7 @@ describe('RolesService', () => {
       expect(result).toBeNull();
       expect(mockPrismaService.roles.findFirst).toHaveBeenCalledWith({
         where: { id: 999 },
-        omit: { createdAt: true, updateAt: true },
+        omit: { createdAt: true, updatedAt: true },
       });
     });
 
@@ -449,8 +449,8 @@ describe('RolesService', () => {
       expect(mockPrismaService.roles.update).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.roles.update).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: { updateRoleDto },
-        omit: { createdAt: true, updateAt: true },
+        data: updateRoleDto,
+        omit: { createdAt: true, updatedAt: true },
       });
     });
 
