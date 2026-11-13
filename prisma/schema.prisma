@@ -8,3 +8,138 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+//tabela de usuarios
+model User {
+  id Int @id @default(autoincrement())
+
+  name     String  @unique
+  email    String  @unique
+  password String
+  active   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // tipos de relacionamentos
+  userRoles            UserRoles[]
+  orderEquipamentUsers OrderEquipamentUser[]
+}
+
+//regras de acesso
+model Roles {
+  id Int @id @default(autoincrement())
+
+  name        String  @unique
+  description String
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //tipo de relacionamento
+  userRoles UserRoles[]
+}
+
+//tabela de integração de usuário e regras
+model UserRoles {
+  id Int @id @default(autoincrement())
+
+  id_user  Int
+  id_roles Int
+
+  //fazendo os relacionamentos
+  user  User  @relation(fields: [id_user], references: [id])
+  roles Roles @relation(fields: [id_roles], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //mantendo tudo unico
+  @@unique([id_user, id_roles])
+}
+
+//tabela de equipamento
+model Equipament {
+  id Int @id @default(autoincrement())
+
+  name        String
+  code        String  @unique
+  description String
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //tipos de relacionamento 1:1 e N:N
+  storageEquipaments StorageEquipament?
+  orders             Order[]
+}
+
+// tabela para local de armazenamento
+model Storage {
+  id Int @id @default(autoincrement())
+
+  name        String  @unique
+  description String
+  full        Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relacionamentos
+  storageEquipaments StorageEquipament?
+  orders             Order[]
+}
+
+//tabela onde cada equipamento esta no seu devido armazenamento
+model StorageEquipament {
+  id Int @id @default(autoincrement())
+
+  id_equipament Int @unique
+  id_storage    Int @unique
+
+  equipament Equipament @relation(fields: [id_equipament], references: [id])
+  storage    Storage    @relation(fields: [id_storage], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//tabelas pedidos
+model Order {
+  id Int @id @default(autoincrement())
+
+  cod        String    @unique
+  dateOrder  DateTime
+  returnedAt DateTime?
+
+  id_equipament Int
+  id_storage    Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipament Equipament @relation(fields: [id_equipament], references: [id])
+  storage    Storage    @relation(fields: [id_storage], references: [id])
+
+  // relacionamentos
+  orderEquipamentUsers OrderEquipamentUser[]
+}
+
+//tabela ordem de pedido pelo usuario
+model OrderEquipamentUser {
+  id Int @id @default(autoincrement())
+
+  id_user  Int
+  id_order Int
+
+  user  User  @relation(fields: [id_user], references: [id])
+  order Order @relation(fields: [id_order], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relacionamentos
+  @@unique([id_user, id_order])
+}
