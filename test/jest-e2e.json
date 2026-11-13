@@ -4,7 +4,8 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "moduleNameMapper": {
-    "^(\\.{1,2}/.*)\\.js$": "$1"
+    "^(\\..*)\\.js$": "$1",
+    "^@nestjs/swagger$": "<rootDir>/../src/__mocks__/@nestjs/swagger.ts"
   },
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
