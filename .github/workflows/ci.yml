@@ -65,6 +65,9 @@ jobs:
       - name: Run database migrations
         run: pnpm exec prisma migrate deploy
 
+      - name: Run Prisma Seeds
+        run: pnpm exec prisma db seed
+
       - name: Run ESLint
         run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
 
