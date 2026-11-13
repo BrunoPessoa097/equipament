@@ -24,10 +24,13 @@
     "@nestjs/common": "^11.2.8",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.2.8",
+    "@nestjs/mapped-types": "^12.0.1",
     "@nestjs/platform-express": "^11.2.8",
     "@nestjs/swagger": "^12.1.1",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
@@ -72,6 +75,10 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^(\\..*)\\.js$": "$1",
+      "^@nestjs/swagger$": "<rootDir>/__mocks__/@nestjs/swagger.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

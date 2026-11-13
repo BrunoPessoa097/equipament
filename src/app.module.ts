@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { APP_FILTER } from '@nestjs/core';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { APP_FILTER } from '@nestjs/core';
       envFilePath: '.env',
     }),
     PrismaModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [
