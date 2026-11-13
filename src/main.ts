@@ -11,7 +11,6 @@ async function bootstrap() {
     .setTitle('Equipament')
     .setDescription('Todas as rotas da API de Equipament')
     .setVersion('1.0')
-    .addTag('Equipament')
     .setContact(
       'Bruno Pessoa',
       'https://github.com/BrunoPessoa097',
