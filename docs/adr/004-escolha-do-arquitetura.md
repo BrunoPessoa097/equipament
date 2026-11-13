@@ -1,7 +1,7 @@
 # ADR-004: Adoção de princípios de Clean Architecture, Clean Code e SOLID
 
 - **Status:** Aceita
-- **Data:** 13/11/2026
+- **Data:** 10/11/2026
 - **Decisores:** Equipe de desenvolvimento
 - **Contexto:** Projeto Equipament
 
