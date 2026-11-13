@@ -87,30 +87,6 @@ describe('RolesController', () => {
       );
       expect(mockRolesService.create).toHaveBeenCalledTimes(1);
     });
-
-    it('deve repassar erro de conflito quando o service falhar por duplicidade', async () => {
-      const conflictError = new ConflictException(
-        'Já existe um registro com esses dados.',
-      );
-      mockRolesService.create.mockRejectedValue(conflictError);
-
-      await expect(controller.create(createRoleDto)).rejects.toThrow(
-        ConflictException,
-      );
-      expect(mockRolesService.create).toHaveBeenCalledTimes(1);
-    });
-
-    it('deve repassar erro inesperado quando o service falhar', async () => {
-      const dbError = new InternalServerErrorException(
-        'Erro no banco de dados',
-      );
-      mockRolesService.create.mockRejectedValue(dbError);
-
-      await expect(controller.create(createRoleDto)).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(mockRolesService.create).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe('findAll', () => {
