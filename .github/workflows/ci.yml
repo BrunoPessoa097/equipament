@@ -72,7 +72,7 @@ jobs:
         run: pnpm exec tsc --noEmit
 
       - name: Run unit tests
-        run: pnpm run test -- --runInBand
+        run: pnpm run test --runInBand
 
       - name: Run e2e tests
         run: pnpm run test:e2e
