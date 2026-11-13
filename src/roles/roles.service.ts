@@ -3,6 +3,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RoleInterface } from './interface/roles.interface';
+import { PaginacaoInterface } from './interface/paginacao.interface';
 
 @Injectable()
 export class RolesService {
@@ -12,7 +13,10 @@ export class RolesService {
     return await this.prisma.roles.create({ data: createRoleDto });
   }
 
-  async findAll(page: number = 1, take: number = 10) {
+  async findAll(
+    page: number = 1,
+    take: number = 10,
+  ): Promise<PaginacaoInterface<RoleInterface[]>> {
     const skip: number = (page - 1) * take;
 
     const [dados, total] = await Promise.all([
@@ -36,7 +40,7 @@ export class RolesService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<RoleInterface | null> {
     return await this.prisma.roles.findFirst({
       where: {
         id,
@@ -45,7 +49,10 @@ export class RolesService {
     });
   }
 
-  async update(id: number, updateRoleDto: UpdateRoleDto) {
+  async update(
+    id: number,
+    updateRoleDto: UpdateRoleDto,
+  ): Promise<RoleInterface> {
     return await this.prisma.roles.update({
       where: {
         id,
@@ -57,7 +64,7 @@ export class RolesService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<RoleInterface> {
     return await this.prisma.roles.delete({
       where: {
         id,
