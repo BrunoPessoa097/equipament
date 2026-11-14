@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserRoleDto } from './dto/create-user-role.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,9 +12,33 @@ export class UserRolesService {
   async create(
     createUserRoleDto: CreateUserRoleDto,
   ): Promise<UserRoleInterface> {
-    return await this.prisma.userRoles.create({
-      data: createUserRoleDto,
-      omit: { createdAt: true, updatedAt: true },
+    const { id_user, id_roles } = createUserRoleDto;
+
+    const [user, role] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: id_user },
+        select: { id: true },
+      }),
+      this.prisma.roles.findUnique({
+        where: { id: id_roles },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (!role) {
+      throw new NotFoundException('Role não encontrada.');
+    }
+
+    return this.prisma.userRoles.create({
+      data: { id_user, id_roles },
+      omit: {
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
@@ -46,7 +70,7 @@ export class UserRolesService {
   }
 
   async findOne(id: number): Promise<UserRoleInterface | null> {
-    return await this.prisma.userRoles.findFirst({
+    return await this.prisma.userRoles.findUniqueOrThrow({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
