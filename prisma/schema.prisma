@@ -22,8 +22,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   // tipos de relacionamentos
-  userRoles            UserRoles[]
-  orderEquipamentUsers OrderEquipamentUser[]
+  userRoles         UserRoles[]
+  storageEquipUsers StorageEquipUser[]
 }
 
 //regras de acesso
@@ -71,9 +71,7 @@ model Equipament {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  //tipos de relacionamento 1:1 e N:N
-  storageEquipaments StorageEquipament?
-  orders             Order[]
+  storageEquipUsers StorageEquipUser[]
 }
 
 // tabela para local de armazenamento
@@ -88,58 +86,20 @@ model Storage {
   updatedAt DateTime @updatedAt
 
   // relacionamentos
-  storageEquipaments StorageEquipament?
-  orders             Order[]
+  storageEquipUsers StorageEquipUser[]
 }
 
-//tabela onde cada equipamento esta no seu devido armazenamento
-model StorageEquipament {
+model StorageEquipUser {
   id Int @id @default(autoincrement())
 
-  id_equipament Int @unique
-  id_storage    Int @unique
-
-  equipament Equipament @relation(fields: [id_equipament], references: [id])
-  storage    Storage    @relation(fields: [id_storage], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//tabelas pedidos
-model Order {
-  id Int @id @default(autoincrement())
-
-  cod        String    @unique
-  dateOrder  DateTime
-  returnedAt DateTime?
-
-  id_equipament Int
+  id_user       Int
   id_storage    Int
+  id_equipament Int @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  equipament Equipament @relation(fields: [id_equipament], references: [id])
+  user       User       @relation(fields: [id_user], references: [id])
   storage    Storage    @relation(fields: [id_storage], references: [id])
-
-  // relacionamentos
-  orderEquipamentUsers OrderEquipamentUser[]
-}
-
-//tabela ordem de pedido pelo usuario
-model OrderEquipamentUser {
-  id Int @id @default(autoincrement())
-
-  id_user  Int
-  id_order Int
-
-  user  User  @relation(fields: [id_user], references: [id])
-  order Order @relation(fields: [id_order], references: [id])
+  equipament Equipament @relation(fields: [id_equipament], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // relacionamentos
-  @@unique([id_user, id_order])
 }
