@@ -1,127 +1,129 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserRolesService } from './user-roles.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserRoleDto } from './dto/create-user-role.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UserRoleInterface } from './interface/user-role.interface';
+import { UserRolesService } from './user-roles.service';
 
 describe('UserRolesService', () => {
   let service: UserRolesService;
 
   const mockPrismaService = {
+    user: { findUnique: jest.fn() },
+    roles: { findUnique: jest.fn() },
     userRoles: {
       create: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
-      findFirst: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
   };
-
   const defaultOmit = { createdAt: true, updatedAt: true };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserRolesService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
+        { provide: PrismaService, useValue: mockPrismaService },
       ],
     }).compile();
 
     service = module.get<UserRolesService>(UserRolesService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(() => jest.clearAllMocks());
 
   it('deve estar definido', () => {
     expect(service).toBeDefined();
   });
 
   describe('create', () => {
-    const createUserRoleDto: CreateUserRoleDto = {
-      id_user: 1,
-      id_roles: 2,
-    };
+    const dto: CreateUserRoleDto = { id_user: 1, id_roles: 2 };
+    const created: UserRoleInterface = { id: 1, ...dto };
 
-    const mockCreatedUserRole: UserRoleInterface = {
-      id: 1,
-      id_user: 1,
-      id_roles: 2,
-    };
+    it('deve criar a associação quando usuário e role existem', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({ id: 1 });
+      mockPrismaService.roles.findUnique.mockResolvedValue({ id: 2 });
+      mockPrismaService.userRoles.create.mockResolvedValue(created);
 
-    it('deve criar uma associação de user role com sucesso', async () => {
-      mockPrismaService.userRoles.create.mockResolvedValue(mockCreatedUserRole);
-
-      const result = await service.create(createUserRoleDto);
-
-      expect(result).toEqual(mockCreatedUserRole);
-      expect(mockPrismaService.userRoles.create).toHaveBeenCalledTimes(1);
+      await expect(service.create(dto)).resolves.toEqual(created);
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        select: { id: true },
+      });
+      expect(mockPrismaService.roles.findUnique).toHaveBeenCalledWith({
+        where: { id: 2 },
+        select: { id: true },
+      });
       expect(mockPrismaService.userRoles.create).toHaveBeenCalledWith({
-        data: createUserRoleDto,
+        data: dto,
         omit: defaultOmit,
       });
     });
 
-    it('deve lançar erro quando o Prisma falhar por violação de unicidade (P2002)', async () => {
-      const prismaError = new Error(
-        'Unique constraint failed on the fields: (`id_user`, `id_roles`)',
-      );
-      Object.assign(prismaError, { code: 'P2002' });
-      mockPrismaService.userRoles.create.mockRejectedValue(prismaError);
+    it('deve lançar NotFoundException quando o usuário não existir', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+      mockPrismaService.roles.findUnique.mockResolvedValue({ id: 2 });
 
-      await expect(service.create(createUserRoleDto)).rejects.toThrow(
-        'Unique constraint failed on the fields: (`id_user`, `id_roles`)',
-      );
-      expect(mockPrismaService.userRoles.create).toHaveBeenCalledTimes(1);
+      await expect(service.create(dto)).rejects.toThrow(NotFoundException);
+      expect(mockPrismaService.userRoles.create).not.toHaveBeenCalled();
     });
 
-    it('deve lançar erro quando o Prisma falhar com erro genérico de banco de dados', async () => {
-      const dbError = new Error('Database connection failed');
-      mockPrismaService.userRoles.create.mockRejectedValue(dbError);
+    it('deve lançar NotFoundException quando a role não existir', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({ id: 1 });
+      mockPrismaService.roles.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(createUserRoleDto)).rejects.toThrow(
-        'Database connection failed',
-      );
-      expect(mockPrismaService.userRoles.create).toHaveBeenCalledTimes(1);
+      await expect(service.create(dto)).rejects.toThrow(NotFoundException);
+      expect(mockPrismaService.userRoles.create).not.toHaveBeenCalled();
+    });
+
+    it('deve propagar falha do Prisma', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({ id: 1 });
+      mockPrismaService.roles.findUnique.mockResolvedValue({ id: 2 });
+      mockPrismaService.userRoles.create.mockRejectedValue(new Error('Falha no banco'));
+
+      await expect(service.create(dto)).rejects.toThrow('Falha no banco');
     });
   });
 
   describe('findAll', () => {
-    const mockUserRoles: UserRoleInterface[] = [
+    const records: UserRoleInterface[] = [
       { id: 1, id_user: 1, id_roles: 1 },
       { id: 2, id_user: 1, id_roles: 2 },
     ];
 
-    it('deve retornar a listagem paginada com valores padrão (page=1, take=10)', async () => {
-      mockPrismaService.userRoles.findMany.mockResolvedValue(mockUserRoles);
+    it('deve retornar a listagem paginada com os valores padrão', async () => {
+      mockPrismaService.userRoles.findMany.mockResolvedValue(records);
       mockPrismaService.userRoles.count.mockResolvedValue(2);
 
-      const result = await service.findAll();
-
-      expect(result).toEqual({
-        dados: mockUserRoles,
+      await expect(service.findAll()).resolves.toEqual({
+        dados: records,
         pagina: 1,
         limite: 10,
         total: 2,
         totalPaginas: 1,
       });
-      expect(mockPrismaService.userRoles.findMany).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.userRoles.count).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.userRoles.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
+        orderBy: { id: 'asc' },
+        omit: defaultOmit,
+      });
     });
 
-    it('deve chamar findMany com skip e take calculados corretamente para a página informada', async () => {
+    it('deve calcular o deslocamento e o total de páginas', async () => {
       mockPrismaService.userRoles.findMany.mockResolvedValue([]);
       mockPrismaService.userRoles.count.mockResolvedValue(15);
 
-      const result = await service.findAll(2, 5);
-
-      expect(result.totalPaginas).toBe(3);
+      await expect(service.findAll(2, 5)).resolves.toMatchObject({
+        pagina: 2,
+        limite: 5,
+        total: 15,
+        totalPaginas: 3,
+      });
       expect(mockPrismaService.userRoles.findMany).toHaveBeenCalledWith({
         skip: 5,
         take: 5,
@@ -130,141 +132,75 @@ describe('UserRolesService', () => {
       });
     });
 
-    it('deve lançar erro quando o Prisma falhar ao buscar os registros', async () => {
-      const dbError = new Error('Database connection failed');
-      mockPrismaService.userRoles.findMany.mockRejectedValue(dbError);
+    it('deve propagar falha do Prisma', async () => {
+      mockPrismaService.userRoles.findMany.mockRejectedValue(new Error('Falha no banco'));
       mockPrismaService.userRoles.count.mockResolvedValue(0);
 
-      await expect(service.findAll()).rejects.toThrow(
-        'Database connection failed',
-      );
+      await expect(service.findAll()).rejects.toThrow('Falha no banco');
     });
   });
 
   describe('findOne', () => {
-    const mockUserRole: UserRoleInterface = {
-      id: 1,
-      id_user: 1,
-      id_roles: 2,
-    };
+    const record: UserRoleInterface = { id: 1, id_user: 1, id_roles: 2 };
 
-    it('deve retornar o user role quando encontrado pelo id', async () => {
-      mockPrismaService.userRoles.findFirst.mockResolvedValue(mockUserRole);
+    it('deve buscar a associação pelo id', async () => {
+      mockPrismaService.userRoles.findUniqueOrThrow.mockResolvedValue(record);
 
-      const result = await service.findOne(1);
-
-      expect(result).toEqual(mockUserRole);
-      expect(mockPrismaService.userRoles.findFirst).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.userRoles.findFirst).toHaveBeenCalledWith({
+      await expect(service.findOne(1)).resolves.toEqual(record);
+      expect(mockPrismaService.userRoles.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { id: 1 },
         omit: defaultOmit,
       });
     });
 
-    it('deve retornar null quando o user role não for encontrado', async () => {
-      mockPrismaService.userRoles.findFirst.mockResolvedValue(null);
-
-      const result = await service.findOne(999);
-
-      expect(result).toBeNull();
-      expect(mockPrismaService.userRoles.findFirst).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.userRoles.findFirst).toHaveBeenCalledWith({
-        where: { id: 999 },
-        omit: defaultOmit,
-      });
-    });
-
-    it('deve lançar erro quando o Prisma falhar ao buscar pelo id', async () => {
-      const dbError = new Error('Database connection failed');
-      mockPrismaService.userRoles.findFirst.mockRejectedValue(dbError);
-
-      await expect(service.findOne(1)).rejects.toThrow(
-        'Database connection failed',
+    it('deve propagar erro quando a associação não existir', async () => {
+      mockPrismaService.userRoles.findUniqueOrThrow.mockRejectedValue(
+        new Error('Record not found'),
       );
+
+      await expect(service.findOne(999)).rejects.toThrow('Record not found');
     });
   });
 
   describe('update', () => {
-    const updateUserRoleDto: UpdateUserRoleDto = {
-      id_roles: 3,
-    };
+    const dto: UpdateUserRoleDto = { id_roles: 3 };
+    const updated: UserRoleInterface = { id: 1, id_user: 1, id_roles: 3 };
 
-    const mockUpdatedUserRole: UserRoleInterface = {
-      id: 1,
-      id_user: 1,
-      id_roles: 3,
-    };
+    it('deve atualizar a associação', async () => {
+      mockPrismaService.userRoles.update.mockResolvedValue(updated);
 
-    it('deve atualizar um user role com sucesso', async () => {
-      mockPrismaService.userRoles.update.mockResolvedValue(mockUpdatedUserRole);
-
-      const result = await service.update(1, updateUserRoleDto);
-
-      expect(result).toEqual(mockUpdatedUserRole);
-      expect(mockPrismaService.userRoles.update).toHaveBeenCalledTimes(1);
+      await expect(service.update(1, dto)).resolves.toEqual(updated);
       expect(mockPrismaService.userRoles.update).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: updateUserRoleDto,
+        data: dto,
         omit: defaultOmit,
       });
     });
 
-    it('deve lançar erro quando o Prisma falhar por violação de unicidade (P2002)', async () => {
-      const prismaError = new Error(
-        'Unique constraint failed on the fields: (`id_user`, `id_roles`)',
-      );
-      Object.assign(prismaError, { code: 'P2002' });
-      mockPrismaService.userRoles.update.mockRejectedValue(prismaError);
+    it('deve propagar erro quando a associação não existir', async () => {
+      mockPrismaService.userRoles.update.mockRejectedValue(new Error('Record not found'));
 
-      await expect(service.update(1, updateUserRoleDto)).rejects.toThrow(
-        'Unique constraint failed on the fields: (`id_user`, `id_roles`)',
-      );
-    });
-
-    it('deve lançar erro quando o registro a ser atualizado não for encontrado', async () => {
-      const dbError = new Error('Record not found');
-      mockPrismaService.userRoles.update.mockRejectedValue(dbError);
-
-      await expect(service.update(999, updateUserRoleDto)).rejects.toThrow(
-        'Record not found',
-      );
+      await expect(service.update(999, dto)).rejects.toThrow('Record not found');
     });
   });
 
   describe('remove', () => {
-    const mockDeletedUserRole: UserRoleInterface = {
-      id: 1,
-      id_user: 1,
-      id_roles: 2,
-    };
+    const deleted: UserRoleInterface = { id: 1, id_user: 1, id_roles: 2 };
 
-    it('deve remover um user role com sucesso', async () => {
-      mockPrismaService.userRoles.delete.mockResolvedValue(mockDeletedUserRole);
+    it('deve remover a associação', async () => {
+      mockPrismaService.userRoles.delete.mockResolvedValue(deleted);
 
-      const result = await service.remove(1);
-
-      expect(result).toEqual(mockDeletedUserRole);
-      expect(mockPrismaService.userRoles.delete).toHaveBeenCalledTimes(1);
+      await expect(service.remove(1)).resolves.toEqual(deleted);
       expect(mockPrismaService.userRoles.delete).toHaveBeenCalledWith({
         where: { id: 1 },
         omit: defaultOmit,
       });
     });
 
-    it('deve lançar erro quando o user role a ser removido não existir', async () => {
-      const dbError = new Error('Record not found');
-      mockPrismaService.userRoles.delete.mockRejectedValue(dbError);
+    it('deve propagar erro quando a associação não existir', async () => {
+      mockPrismaService.userRoles.delete.mockRejectedValue(new Error('Record not found'));
 
       await expect(service.remove(999)).rejects.toThrow('Record not found');
-    });
-
-    it('deve lançar erro genérico quando o Prisma falhar ao remover', async () => {
-      const dbError = new Error('Database connection failed');
-      mockPrismaService.userRoles.delete.mockRejectedValue(dbError);
-
-      await expect(service.remove(1)).rejects.toThrow(
-        'Database connection failed',
-      );
     });
   });
 });
