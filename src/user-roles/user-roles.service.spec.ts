@@ -83,7 +83,9 @@ describe('UserRolesService', () => {
     it('deve propagar falha do Prisma', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({ id: 1 });
       mockPrismaService.roles.findUnique.mockResolvedValue({ id: 2 });
-      mockPrismaService.userRoles.create.mockRejectedValue(new Error('Falha no banco'));
+      mockPrismaService.userRoles.create.mockRejectedValue(
+        new Error('Falha no banco'),
+      );
 
       await expect(service.create(dto)).rejects.toThrow('Falha no banco');
     });
@@ -133,7 +135,9 @@ describe('UserRolesService', () => {
     });
 
     it('deve propagar falha do Prisma', async () => {
-      mockPrismaService.userRoles.findMany.mockRejectedValue(new Error('Falha no banco'));
+      mockPrismaService.userRoles.findMany.mockRejectedValue(
+        new Error('Falha no banco'),
+      );
       mockPrismaService.userRoles.count.mockResolvedValue(0);
 
       await expect(service.findAll()).rejects.toThrow('Falha no banco');
@@ -147,7 +151,9 @@ describe('UserRolesService', () => {
       mockPrismaService.userRoles.findUniqueOrThrow.mockResolvedValue(record);
 
       await expect(service.findOne(1)).resolves.toEqual(record);
-      expect(mockPrismaService.userRoles.findUniqueOrThrow).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.userRoles.findUniqueOrThrow,
+      ).toHaveBeenCalledWith({
         where: { id: 1 },
         omit: defaultOmit,
       });
@@ -178,9 +184,13 @@ describe('UserRolesService', () => {
     });
 
     it('deve propagar erro quando a associação não existir', async () => {
-      mockPrismaService.userRoles.update.mockRejectedValue(new Error('Record not found'));
+      mockPrismaService.userRoles.update.mockRejectedValue(
+        new Error('Record not found'),
+      );
 
-      await expect(service.update(999, dto)).rejects.toThrow('Record not found');
+      await expect(service.update(999, dto)).rejects.toThrow(
+        'Record not found',
+      );
     });
   });
 
@@ -198,7 +208,9 @@ describe('UserRolesService', () => {
     });
 
     it('deve propagar erro quando a associação não existir', async () => {
-      mockPrismaService.userRoles.delete.mockRejectedValue(new Error('Record not found'));
+      mockPrismaService.userRoles.delete.mockRejectedValue(
+        new Error('Record not found'),
+      );
 
       await expect(service.remove(999)).rejects.toThrow('Record not found');
     });

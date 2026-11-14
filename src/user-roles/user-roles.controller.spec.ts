@@ -22,7 +22,9 @@ describe('UserRolesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserRolesController],
-      providers: [{ provide: UserRolesService, useValue: mockUserRolesService }],
+      providers: [
+        { provide: UserRolesService, useValue: mockUserRolesService },
+      ],
     }).compile();
 
     controller = module.get<UserRolesController>(UserRolesController);
@@ -46,7 +48,9 @@ describe('UserRolesController', () => {
       await expect(controller.create(createUserRoleDto)).resolves.toEqual(
         createdUserRole,
       );
-      expect(mockUserRolesService.create).toHaveBeenCalledWith(createUserRoleDto);
+      expect(mockUserRolesService.create).toHaveBeenCalledWith(
+        createUserRoleDto,
+      );
     });
 
     it('deve repassar erro quando usuário ou role não forem encontrados', async () => {
