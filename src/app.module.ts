@@ -8,6 +8,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { RolesModule } from './roles/roles.module';
 import { UserModule } from './user/user.module';
 import { UserRolesModule } from './user-roles/user-roles.module';
+import { EquipamentModule } from './equipament/equipament.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserRolesModule } from './user-roles/user-roles.module';
     RolesModule,
     UserModule,
     UserRolesModule,
+    EquipamentModule,
   ],
   controllers: [AppController],
   providers: [
