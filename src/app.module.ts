@@ -7,6 +7,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
 import { APP_FILTER } from '@nestjs/core';
 import { RolesModule } from './roles/roles.module';
 import { UserModule } from './user/user.module';
+import { UserRolesModule } from './user-roles/user-roles.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserModule } from './user/user.module';
     PrismaModule,
     RolesModule,
     UserModule,
+    UserRolesModule,
   ],
   controllers: [AppController],
   providers: [
