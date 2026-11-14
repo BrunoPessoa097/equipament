@@ -9,6 +9,7 @@ import { RolesModule } from './roles/roles.module';
 import { UserModule } from './user/user.module';
 import { UserRolesModule } from './user-roles/user-roles.module';
 import { EquipamentModule } from './equipament/equipament.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EquipamentModule } from './equipament/equipament.module';
     UserModule,
     UserRolesModule,
     EquipamentModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [
