@@ -480,9 +480,9 @@ describe('UserController', () => {
       const notFoundError = new NotFoundException('Usuário não encontrado');
       mockUserService.remove.mockRejectedValue(notFoundError);
 
-      await expect(
-        controller.remove(999 as unknown as string),
-      ).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(999 as unknown as string)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
       expect(mockUserService.remove).toHaveBeenCalledWith(999);
     });
@@ -491,9 +491,9 @@ describe('UserController', () => {
       const dbError = new InternalServerErrorException('Erro ao remover');
       mockUserService.remove.mockRejectedValue(dbError);
 
-      await expect(
-        controller.remove(1 as unknown as string),
-      ).rejects.toThrow(InternalServerErrorException);
+      await expect(controller.remove(1 as unknown as string)).rejects.toThrow(
+        InternalServerErrorException,
+      );
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
     });
   });
