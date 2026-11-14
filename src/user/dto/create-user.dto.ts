@@ -16,7 +16,7 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  nome!: string;
+  name!: string;
 
   @ApiProperty({
     example: 'exemple@exemple.com',
