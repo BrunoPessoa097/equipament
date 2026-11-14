@@ -1,6 +1,6 @@
-export interface UserINterface {
+export interface UserInterface {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   active: boolean;
 }

@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserINterface } from './interface/user.interface';
+import { UserInterface } from './interface/user.interface';
 import * as argon2 from 'argon2';
 
 jest.mock('argon2');
@@ -21,6 +21,8 @@ describe('UserService', () => {
       delete: jest.fn(),
     },
   };
+
+  const defaultOmit = { createdAt: true, updatedAt: true, password: true };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -52,15 +54,14 @@ describe('UserService', () => {
       active: true,
     };
 
-    const mockCreatedUser: UserINterface & { id: number } = {
+    const mockCreatedUser: UserInterface & { id: number } = {
       id: 1,
       name: 'João Silva',
       email: 'joao.silva@example.com',
-      password: 'hashedPassword123',
       active: true,
     };
 
-    it('deve criar um usuário com a senha criptografada (hash) com sucesso', async () => {
+    it('deve criar um usuário com senha criptografada e retornar sem expor a senha', async () => {
       jest.mocked(argon2.hash).mockResolvedValue('hashedPassword123');
       mockPrismaService.user.create.mockResolvedValue(mockCreatedUser);
 
@@ -69,12 +70,14 @@ describe('UserService', () => {
       expect(argon2.hash).toHaveBeenCalledTimes(1);
       expect(argon2.hash).toHaveBeenCalledWith(createUserDto.password);
       expect(result).toEqual(mockCreatedUser);
+      expect(result).not.toHaveProperty('password');
       expect(mockPrismaService.user.create).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.create).toHaveBeenCalledWith({
         data: {
           ...createUserDto,
           password: 'hashedPassword123',
         },
+        omit: defaultOmit,
       });
     });
 
@@ -109,19 +112,17 @@ describe('UserService', () => {
         id: 1,
         name: 'João Silva',
         email: 'joao.silva@example.com',
-        password: 'Senha@123',
         active: true,
       },
       {
         id: 2,
         name: 'Maria Santos',
         email: 'maria.santos@example.com',
-        password: 'Senha@123',
         active: true,
       },
     ];
 
-    it('deve retornar a listagem paginada com valores padrão (page=1, take=10)', async () => {
+    it('deve retornar a listagem paginada com valores padrão (page=1, take=10) e sem senhas', async () => {
       mockPrismaService.user.findMany.mockResolvedValue(mockUsers);
       mockPrismaService.user.count.mockResolvedValue(2);
 
@@ -138,7 +139,7 @@ describe('UserService', () => {
       expect(mockPrismaService.user.count).toHaveBeenCalledTimes(1);
     });
 
-    it('deve chamar findMany com skip e take calculados corretamente para a página informada', async () => {
+    it('deve chamar findMany com skip e take calculados corretamente e omitindo campos sensíveis', async () => {
       mockPrismaService.user.findMany.mockResolvedValue([]);
       mockPrismaService.user.count.mockResolvedValue(15);
 
@@ -149,7 +150,7 @@ describe('UserService', () => {
         skip: 5,
         take: 5,
         orderBy: { id: 'asc' },
-        omit: { createdAt: true, updatedAt: true },
+        omit: defaultOmit,
       });
     });
 
@@ -169,20 +170,20 @@ describe('UserService', () => {
       id: 1,
       name: 'João Silva',
       email: 'joao.silva@example.com',
-      password: 'Senha@123',
       active: true,
     };
 
-    it('deve retornar o usuário quando encontrado pelo id', async () => {
+    it('deve retornar o usuário quando encontrado pelo id com senha omitida', async () => {
       mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
 
       const result = await service.findOne(1);
 
       expect(result).toEqual(mockUser);
+      expect(result).not.toHaveProperty('password');
       expect(mockPrismaService.user.findFirst).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.findFirst).toHaveBeenCalledWith({
         where: { id: 1 },
-        omit: { createdAt: true, updatedAt: true },
+        omit: defaultOmit,
       });
     });
 
@@ -195,7 +196,7 @@ describe('UserService', () => {
       expect(mockPrismaService.user.findFirst).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.findFirst).toHaveBeenCalledWith({
         where: { id: 999 },
-        omit: { createdAt: true, updatedAt: true },
+        omit: defaultOmit,
       });
     });
 
@@ -210,49 +211,58 @@ describe('UserService', () => {
   });
 
   describe('update', () => {
-    const updateUserDto: UpdateUserDto = {
-      name: 'João Silva Atualizado',
-    };
-
     const mockUpdatedUser = {
       id: 1,
       name: 'João Silva Atualizado',
       email: 'joao.silva@example.com',
-      password: 'Senha@123',
       active: true,
     };
 
-    it('deve atualizar um usuário com sucesso', async () => {
+    it('deve atualizar dados do usuário sem senha e retornar sem senha', async () => {
+      const updateUserDto: UpdateUserDto = {
+        name: 'João Silva Atualizado',
+      };
+
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
 
       const result = await service.update(1, updateUserDto);
 
       expect(result).toEqual(mockUpdatedUser);
+      expect(result).not.toHaveProperty('password');
+      expect(argon2.hash).not.toHaveBeenCalled();
       expect(mockPrismaService.user.update).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: updateUserDto,
-        omit: { createdAt: true, updatedAt: true },
+        omit: defaultOmit,
       });
     });
 
-    it('deve lançar erro quando o Prisma falhar por violação de unicidade (P2002)', async () => {
-      const prismaError = new Error(
-        'Unique constraint failed on the fields: (`name`)',
-      );
-      Object.assign(prismaError, { code: 'P2002' });
-      mockPrismaService.user.update.mockRejectedValue(prismaError);
+    it('deve criptografar a nova senha caso seja informada no update', async () => {
+      const updateUserWithPasswordDto: UpdateUserDto = {
+        password: 'NovaSenha@123',
+      };
 
-      await expect(service.update(1, updateUserDto)).rejects.toThrow(
-        'Unique constraint failed on the fields: (`name`)',
-      );
+      jest.mocked(argon2.hash).mockResolvedValue('newHashedPassword456');
+      mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
+
+      const result = await service.update(1, updateUserWithPasswordDto);
+
+      expect(argon2.hash).toHaveBeenCalledTimes(1);
+      expect(argon2.hash).toHaveBeenCalledWith('NovaSenha@123');
+      expect(result).toEqual(mockUpdatedUser);
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { password: 'newHashedPassword456' },
+        omit: defaultOmit,
+      });
     });
 
     it('deve lançar erro quando o usuário não for encontrado ou ocorrer erro no banco', async () => {
       const dbError = new Error('Record not found');
       mockPrismaService.user.update.mockRejectedValue(dbError);
 
-      await expect(service.update(999, updateUserDto)).rejects.toThrow(
+      await expect(service.update(999, { name: 'Teste' })).rejects.toThrow(
         'Record not found',
       );
     });
@@ -263,19 +273,20 @@ describe('UserService', () => {
       id: 1,
       name: 'João Silva',
       email: 'joao.silva@example.com',
-      password: 'Senha@123',
       active: true,
     };
 
-    it('deve remover um usuário com sucesso', async () => {
+    it('deve remover um usuário com sucesso e retornar com senha omitida', async () => {
       mockPrismaService.user.delete.mockResolvedValue(mockDeletedUser);
 
       const result = await service.remove(1);
 
       expect(result).toEqual(mockDeletedUser);
+      expect(result).not.toHaveProperty('password');
       expect(mockPrismaService.user.delete).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.delete).toHaveBeenCalledWith({
         where: { id: 1 },
+        omit: defaultOmit,
       });
     });
 
