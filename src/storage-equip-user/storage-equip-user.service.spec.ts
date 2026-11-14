@@ -137,10 +137,12 @@ describe('StorageEquipUserService', () => {
       mockPrismaService.storageEquipUser.findFirst.mockResolvedValue(relation);
 
       await expect(service.findOne(1)).resolves.toEqual(relation);
-      expect(mockPrismaService.storageEquipUser.findFirst).toHaveBeenCalledWith({
-        where: { id: 1 },
-        omit: { createdAt: true, updatedAt: true },
-      });
+      expect(mockPrismaService.storageEquipUser.findFirst).toHaveBeenCalledWith(
+        {
+          where: { id: 1 },
+          omit: { createdAt: true, updatedAt: true },
+        },
+      );
     });
 
     it('deve retornar null quando a relação não existir', async () => {
