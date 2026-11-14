@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateUserRoleDto {
   @ApiProperty({
@@ -8,7 +8,6 @@ export class CreateUserRoleDto {
   })
   @IsInt()
   @IsNotEmpty()
-  @MaxLength(50)
   id_user!: number;
 
   @ApiProperty({
@@ -17,6 +16,5 @@ export class CreateUserRoleDto {
   })
   @IsInt()
   @IsNotEmpty()
-  @MaxLength(50)
   id_roles!: number;
 }
