@@ -1,5 +1,5 @@
 export interface UserINterface {
-  nome: string;
+  name: string;
   email: string;
   password: string;
   active: boolean;
