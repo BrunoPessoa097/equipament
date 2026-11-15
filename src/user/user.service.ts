@@ -12,12 +12,33 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto): Promise<UserInterface> {
     const passwordHash = await argon2.hash(createUserDto.password);
-    return await this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: passwordHash,
-      },
-      omit: { createdAt: true, updatedAt: true, password: true },
+
+    return await this.prisma.$transaction(async (tx) => {
+      const rolePublic = await tx.roles.findUniqueOrThrow({
+        where: { name: 'PUBLIC' },
+        select: { id: true },
+      });
+
+      const user = await tx.user.create({
+        data: {
+          ...createUserDto,
+          password: passwordHash,
+        },
+        omit: {
+          createdAt: true,
+          updatedAt: true,
+          password: true,
+        },
+      });
+
+      await tx.userRoles.create({
+        data: {
+          id_user: user.id,
+          id_roles: rolePublic.id,
+        },
+      });
+
+      return user;
     });
   }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateEquipamentDto } from './dto/create-equipament.dto';
 import { UpdateEquipamentDto } from './dto/update-equipament.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,15 +7,18 @@ import { PaginacaoInterface } from '../config/paginacao.interface';
 
 @Injectable()
 export class EquipamentService {
+  private readonly logger = new Logger(EquipamentService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
     createEquipamentDto: CreateEquipamentDto,
   ): Promise<EquipamentInterface> {
-    return await this.prisma.equipament.create({
+    const equipament = await this.prisma.equipament.create({
       data: createEquipamentDto,
       omit: { createdAt: true, updatedAt: true },
     });
+    this.logger.log(`Equipamento cadastrado. ID: ${equipament.id}`);
+    return equipament;
   }
 
   async findAll(
@@ -36,6 +39,9 @@ export class EquipamentService {
 
     const numPaginas: number = Math.ceil(total / take);
 
+    this.logger.debug(
+      `Consulta de equipamentos realizada. Página: ${page}, Total: ${total}`,
+    );
     return {
       dados,
       pagina: page,
@@ -46,31 +52,45 @@ export class EquipamentService {
   }
 
   async findOne(id: number): Promise<EquipamentInterface | null> {
-    return await this.prisma.equipament.findFirst({
+    const equipament = await this.prisma.equipament.findFirst({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.debug(
+      equipament
+        ? `Equipamento consultado. ID: ${id}`
+        : `Equipamento não encontrado. ID: ${id}`,
+    );
+
+    return equipament;
   }
 
   async update(
     id: number,
     updateEquipamentDto: UpdateEquipamentDto,
   ): Promise<EquipamentInterface> {
-    return await this.prisma.equipament.update({
+    const equipament = await this.prisma.equipament.update({
       where: {
         id,
       },
       data: updateEquipamentDto,
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Equipamento atualizado. ID: ${equipament.id}`);
+    return equipament;
   }
 
   async remove(id: number): Promise<EquipamentInterface> {
-    return await this.prisma.equipament.delete({
+    const equipament = await this.prisma.equipament.delete({
       where: {
         id,
       },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.warn(`Equipamento excluído. ID: ${equipament.id}`);
+    return equipament;
   }
 }
