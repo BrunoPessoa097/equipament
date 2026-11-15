@@ -15,6 +15,8 @@ import { StorageEquipUserModule } from './storage-equip-user/storage-equip-user.
 import { AuthModule } from './auth/auth.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { MetricsInterceptor } from './metrics/metrics/metrics.interceptor';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -22,6 +24,12 @@ import { MetricsInterceptor } from './metrics/metrics/metrics.interceptor';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     PrismaModule,
     RolesModule,
     UserModule,
@@ -42,6 +50,10 @@ import { MetricsInterceptor } from './metrics/metrics/metrics.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
