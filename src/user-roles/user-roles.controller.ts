@@ -7,13 +7,25 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserRolesService } from './user-roles.service';
 import { CreateUserRoleDto } from './dto/create-user-role.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user-roles')
+@ApiTags('User Roles')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class UserRolesController {
   constructor(private readonly userRolesService: UserRolesService) {}
 

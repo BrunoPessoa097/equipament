@@ -7,19 +7,24 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { StorageEquipUserService } from './storage-equip-user.service';
 import { CreateStorageEquipUserDto } from './dto/create-storage-equip-user.dto';
 import { UpdateStorageEquipUserDto } from './dto/update-storage-equip-user.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('storage-equip-user')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @ApiTags('Storage Equipamento User')
 export class StorageEquipUserController {
   constructor(

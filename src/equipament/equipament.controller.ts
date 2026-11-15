@@ -7,19 +7,24 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { EquipamentService } from './equipament.service';
 import { CreateEquipamentDto } from './dto/create-equipament.dto';
 import { UpdateEquipamentDto } from './dto/update-equipament.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('equipament')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @ApiTags('Equipament')
 export class EquipamentController {
   constructor(private readonly equipamentService: EquipamentService) {}
