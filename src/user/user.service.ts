@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,6 +8,7 @@ import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserInterface> {
@@ -38,6 +39,7 @@ export class UserService {
         },
       });
 
+      this.logger.log(`Local de armazenamento cadastrado. ID: ${user.id}`);
       return user;
     });
   }
@@ -60,6 +62,9 @@ export class UserService {
 
     const numPaginas: number = Math.ceil(total / take);
 
+    this.logger.debug(
+      `Consulta de locais de armazenamento realizada. Página: ${page}, Total: ${total}`,
+    );
     return {
       dados,
       pagina: page,
@@ -70,12 +75,18 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<UserInterface | null> {
-    return await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: {
         id,
       },
       omit: { createdAt: true, updatedAt: true, password: true },
     });
+    this.logger.debug(
+      user
+        ? `Local de armazenamento encontrado. ID: ${id}`
+        : `Local de armazenamento não encontrado. ID: ${id}`,
+    );
+    return user;
   }
 
   async update(
@@ -87,19 +98,24 @@ export class UserService {
       data.password = await argon2.hash(data.password);
     }
 
-    return await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: {
         id,
       },
       data,
       omit: { createdAt: true, updatedAt: true, password: true },
     });
+
+    this.logger.log(`Local de armazenamento atualizado. ID: ${user.id}`);
+    return user;
   }
 
   async remove(id: number): Promise<UserInterface> {
-    return await this.prisma.user.delete({
+    const user = await this.prisma.user.delete({
       where: { id },
       omit: { createdAt: true, updatedAt: true, password: true },
     });
+    this.logger.log(`Local de armazenamento excluído. ID: ${user.id}`);
+    return user;
   }
 }

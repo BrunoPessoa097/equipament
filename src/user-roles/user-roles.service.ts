@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateUserRoleDto } from './dto/create-user-role.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,7 @@ import { PaginacaoInterface } from '../config/paginacao.interface';
 
 @Injectable()
 export class UserRolesService {
+  private readonly logger = new Logger(UserRolesService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
@@ -33,13 +34,16 @@ export class UserRolesService {
       throw new NotFoundException('Role não encontrada.');
     }
 
-    return this.prisma.userRoles.create({
+    const userRole = await this.prisma.userRoles.create({
       data: { id_user, id_roles },
       omit: {
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    this.logger.log(`Local de armazenamento cadastrado. ID: ${userRole.id}`);
+    return userRole;
   }
 
   async findAll(
@@ -60,6 +64,9 @@ export class UserRolesService {
 
     const numPaginas: number = Math.ceil(total / take);
 
+    this.logger.debug(
+      `Consulta de locais de armazenamento realizada. Página: ${page}, Total: ${total}`,
+    );
     return {
       dados,
       pagina: page,
@@ -70,27 +77,41 @@ export class UserRolesService {
   }
 
   async findOne(id: number): Promise<UserRoleInterface | null> {
-    return await this.prisma.userRoles.findUniqueOrThrow({
+    const userRole = await this.prisma.userRoles.findUniqueOrThrow({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.debug(
+      userRole
+        ? `Local de armazenamento encontrado. ID: ${id}`
+        : `Local de armazenamento não encontrado. ID: ${id}`,
+    );
+
+    return userRole;
   }
 
   async update(
     id: number,
     updateUserRoleDto: UpdateUserRoleDto,
   ): Promise<UserRoleInterface> {
-    return await this.prisma.userRoles.update({
+    const userRole = await this.prisma.userRoles.update({
       where: { id },
       data: updateUserRoleDto,
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Local de armazenamento atualizado. ID: ${userRole.id}`);
+    return userRole;
   }
 
   async remove(id: number): Promise<UserRoleInterface> {
-    return await this.prisma.userRoles.delete({
+    const userRole = await this.prisma.userRoles.delete({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Local de armazenamento excluído. ID: ${userRole.id}`);
+    return userRole;
   }
 }
