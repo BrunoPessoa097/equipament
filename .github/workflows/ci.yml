@@ -73,6 +73,7 @@ jobs:
       - name: Run Prisma Seeds
         run: pnpm exec prisma db seed
         env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
           SEED_PUBLIC_NAME: ${{ secrets.SEED_PUBLIC_NAME }}
           SEED_PUBLIC_EMAIL: ${{ secrets.SEED_PUBLIC_EMAIL }}
           SEED_PUBLIC_PASSWORD: ${{ secrets.SEED_PUBLIC_PASSWORD }}
