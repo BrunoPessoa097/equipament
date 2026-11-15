@@ -72,6 +72,13 @@ jobs:
 
       - name: Run Prisma Seeds
         run: pnpm exec prisma db seed
+        env:
+          SEED_PUBLIC_NAME: Usuario Publico CI
+          SEED_PUBLIC_EMAIL: public-ci@example.com
+          SEED_PUBLIC_PASSWORD: CI-Public-Password-123
+          SEED_ADMIN_NAME: Administrador CI
+          SEED_ADMIN_EMAIL: admin-ci@example.com
+          SEED_ADMIN_PASSWORD: CI-Admin-Password-123
 
       - name: Run test database migrations
         run: pnpm exec prisma migrate deploy
@@ -82,6 +89,12 @@ jobs:
         run: pnpm exec prisma db seed
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
+          SEED_PUBLIC_NAME: Usuario Publico CI
+          SEED_PUBLIC_EMAIL: public-ci@example.com
+          SEED_PUBLIC_PASSWORD: CI-Public-Password-123
+          SEED_ADMIN_NAME: Administrador CI
+          SEED_ADMIN_EMAIL: admin-ci@example.com
+          SEED_ADMIN_PASSWORD: CI-Admin-Password-123
 
       - name: Run ESLint
         run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
