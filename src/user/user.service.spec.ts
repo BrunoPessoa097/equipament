@@ -12,6 +12,7 @@ describe('UserService', () => {
   let service: UserService;
 
   const mockPrismaService = {
+    $transaction: jest.fn(),
     user: {
       create: jest.fn(),
       findMany: jest.fn(),
@@ -25,6 +26,18 @@ describe('UserService', () => {
   const defaultOmit = { createdAt: true, updatedAt: true, password: true };
 
   beforeEach(async () => {
+    mockPrismaService.$transaction.mockImplementation((callback) =>
+      callback({
+        roles: {
+          findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 1 }),
+        },
+        user: mockPrismaService.user,
+        userRoles: {
+          create: jest.fn().mockResolvedValue({}),
+        },
+      }),
+    );
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
@@ -71,6 +84,7 @@ describe('UserService', () => {
       expect(argon2.hash).toHaveBeenCalledWith(createUserDto.password);
       expect(result).toEqual(mockCreatedUser);
       expect(result).not.toHaveProperty('password');
+      expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.create).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.user.create).toHaveBeenCalledWith({
         data: {
