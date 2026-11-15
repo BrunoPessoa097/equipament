@@ -77,6 +77,14 @@ jobs:
       - name: Run unit tests
         run: pnpm run test --runInBand
 
+      - name: Configure test environment
+        run: |
+          printf 'POSTGRES_USER=postgres\n' >> .env
+          printf 'POSTGRES_PASSWORD=postgres\n' >> .env
+          printf 'POSTGRES_DB=equipament_test_db\n' >> .env
+          printf 'JWT_SECRET=test-secret-for-ci\n' >> .env
+          printf 'DATABASE_TEST_URL=postgresql://postgres:postgres@localhost:5432/equipament_test_db\n' >> .env
+
       - name: Run e2e tests
         run: pnpm run test:e2e
 
