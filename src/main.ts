@@ -19,6 +19,7 @@ async function bootstrap() {
       'https://github.com/BrunoPessoa097',
       'brunopessoa097@gmail.com',
     )
+    .addBearerAuth()
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
