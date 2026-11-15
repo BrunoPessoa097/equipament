@@ -84,6 +84,17 @@ Para garantir a aplicação das diretrizes estabelecidas, serão utilizadas ferr
 
 As verificações deverão ser executadas durante o desenvolvimento e integradas ao pipeline de CI.
 
+## 5.1. Padrões de projeto adotados
+
+O projeto utiliza os seguintes padrões e mecanismos arquiteturais:
+
+- **Modular Architecture:** organização da aplicação em módulos independentes por responsabilidade de negócio, utilizando a estrutura do NestJS.
+- **Dependency Injection:** utilização do mecanismo de injeção de dependências do NestJS para fornecer serviços e dependências aos componentes.
+- **Service Layer:** utilização de Services para centralizar operações e regras de negócio, mantendo os Controllers responsáveis pela comunicação HTTP.
+- **Data Access através do PrismaService:** os Services utilizam o PrismaService para executar operações de persistência no PostgreSQL, sem implementação de uma camada Repository intermediária.
+
+A decisão de utilizar o PrismaService diretamente foi tomada para manter a implementação simples e proporcional à complexidade atual do projeto, evitando abstrações desnecessárias.
+
 ## 6. Consequências
 
 ### Positivas
