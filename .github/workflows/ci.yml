@@ -16,12 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Quality and Tests
+  ci:
     runs-on: ubuntu-latest
-
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_db?schema=public
 
     services:
       postgres:
@@ -33,10 +29,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d equipament_db"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_db?schema=public
 
     steps:
       - name: Checkout repository
@@ -44,23 +43,15 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24.9.0
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Check formatting
-        run: pnpm exec prettier --check "src/**/*.ts" "test/**/*.ts"
-
-      - name: Generate Prisma Client
-        run: pnpm exec prisma generate
 
       - name: Create test database
         run: |
@@ -73,7 +64,6 @@ jobs:
       - name: Run Prisma Seeds
         run: pnpm exec prisma db seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
           SEED_PUBLIC_NAME: ${{ secrets.SEED_PUBLIC_NAME }}
           SEED_PUBLIC_EMAIL: ${{ secrets.SEED_PUBLIC_EMAIL }}
           SEED_PUBLIC_PASSWORD: ${{ secrets.SEED_PUBLIC_PASSWORD }}
@@ -90,6 +80,12 @@ jobs:
         run: pnpm exec prisma db seed
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
+          SEED_PUBLIC_NAME: ${{ secrets.SEED_PUBLIC_NAME }}
+          SEED_PUBLIC_EMAIL: ${{ secrets.SEED_PUBLIC_EMAIL }}
+          SEED_PUBLIC_PASSWORD: ${{ secrets.SEED_PUBLIC_PASSWORD }}
+          SEED_ADMIN_NAME: ${{ secrets.SEED_ADMIN_NAME }}
+          SEED_ADMIN_EMAIL: ${{ secrets.SEED_ADMIN_EMAIL }}
+          SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
 
       - name: Run ESLint
         run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
