@@ -21,9 +21,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('equipament')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('PUBLIC', 'ADM')
 @ApiBearerAuth()
 @ApiTags('Equipament')
 export class EquipamentController {
@@ -85,6 +88,7 @@ export class EquipamentController {
   }
 
   @Delete(':id')
+  @Roles('ADM')
   @ApiOperation({ summary: 'Remover uma equipamento' })
   @ApiParam({
     name: 'id',

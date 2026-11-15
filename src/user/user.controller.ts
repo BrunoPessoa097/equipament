@@ -21,6 +21,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('user')
 @ApiTags('User')
@@ -37,7 +39,8 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todas os usuários' })
   @ApiResponse({
@@ -49,7 +52,8 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Buscar um usuário pelo ID' })
   @ApiParam({
@@ -64,7 +68,8 @@ export class UserController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar uma role' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador da role' })
@@ -79,7 +84,8 @@ export class UserController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADM')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover uma role' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador da role' })
