@@ -6,6 +6,7 @@ import {
   createAdminFixture,
   createE2eContext,
   E2eContext,
+  responseBody,
 } from './e2e-context';
 
 describe('StorageEquipUserModule (e2e)', () => {
@@ -69,14 +70,14 @@ describe('StorageEquipUserModule (e2e)', () => {
       .set(bearer(admin.token))
       .send(dto)
       .expect(201);
-    relationId = created.body.id;
+    relationId = responseBody<{ id: number }>(created.body).id;
 
     const found = await request(context.app.getHttpServer())
       .get(`/storage-equip-user/${relationId}`)
       .set(bearer(admin.token))
       .expect(200);
 
-    expect(found.body).toMatchObject({ id: relationId, ...dto });
+    expect(responseBody(found.body)).toMatchObject({ id: relationId, ...dto });
   });
 
   it('POST /storage-equip-user rejeita identificadores inválidos', async () => {

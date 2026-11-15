@@ -6,6 +6,7 @@ import {
   createAdminFixture,
   createE2eContext,
   E2eContext,
+  responseBody,
 } from './e2e-context';
 
 describe('UserModule (e2e)', () => {
@@ -44,9 +45,12 @@ describe('UserModule (e2e)', () => {
       .send(dto)
       .expect(201);
 
-    createdUserIds.push(response.body.id);
-    expect(response.body).toMatchObject({ name: dto.name, email: dto.email });
-    expect(response.body).not.toHaveProperty('password');
+    const user = responseBody<{ id: number; name: string; email: string }>(
+      response.body,
+    );
+    createdUserIds.push(user.id);
+    expect(user).toMatchObject({ name: dto.name, email: dto.email });
+    expect(user).not.toHaveProperty('password');
   });
 
   it('GET /user/:id retorna usuário autenticado sem expor a senha', async () => {
@@ -55,8 +59,9 @@ describe('UserModule (e2e)', () => {
       .set(bearer(admin.token))
       .expect(200);
 
-    expect(response.body).toMatchObject({ id: admin.id, email: admin.email });
-    expect(response.body).not.toHaveProperty('password');
+    const user = responseBody<{ id: number; email: string }>(response.body);
+    expect(user).toMatchObject({ id: admin.id, email: admin.email });
+    expect(user).not.toHaveProperty('password');
   });
 
   it('GET /user sem token retorna não autorizado', async () => {

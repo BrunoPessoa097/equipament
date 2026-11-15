@@ -6,6 +6,7 @@ import {
   createAdminFixture,
   createE2eContext,
   E2eContext,
+  responseBody,
 } from './e2e-context';
 
 describe('EquipamentModule (e2e)', () => {
@@ -45,14 +46,18 @@ describe('EquipamentModule (e2e)', () => {
       .set(bearer(admin.token))
       .send(dto)
       .expect(201);
-    createdEquipamentIds.push(created.body.id);
+    const equipament = responseBody<{ id: number }>(created.body);
+    createdEquipamentIds.push(equipament.id);
 
     const found = await request(context.app.getHttpServer())
-      .get(`/equipament/${created.body.id}`)
+      .get(`/equipament/${equipament.id}`)
       .set(bearer(admin.token))
       .expect(200);
 
-    expect(found.body).toMatchObject({ id: created.body.id, ...dto });
+    expect(responseBody(found.body)).toMatchObject({
+      id: equipament.id,
+      ...dto,
+    });
   });
 
   it('GET /equipament/:id rejeita identificador inválido', async () => {

@@ -6,6 +6,7 @@ import {
   createAdminFixture,
   createE2eContext,
   E2eContext,
+  responseBody,
 } from './e2e-context';
 
 describe('StorageModule (e2e)', () => {
@@ -44,14 +45,15 @@ describe('StorageModule (e2e)', () => {
       .set(bearer(admin.token))
       .send(dto)
       .expect(201);
-    createdStorageIds.push(created.body.id);
+    const storage = responseBody<{ id: number }>(created.body);
+    createdStorageIds.push(storage.id);
 
     const found = await request(context.app.getHttpServer())
-      .get(`/storage/${created.body.id}`)
+      .get(`/storage/${storage.id}`)
       .set(bearer(admin.token))
       .expect(200);
 
-    expect(found.body).toMatchObject({ id: created.body.id, ...dto });
+    expect(responseBody(found.body)).toMatchObject({ id: storage.id, ...dto });
   });
 
   it('POST /storage rejeita o tipo incorreto para full', async () => {

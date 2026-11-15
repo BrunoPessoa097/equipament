@@ -4,6 +4,7 @@ import {
   createE2eContext,
   E2eContext,
   AdminFixture,
+  responseBody,
 } from './e2e-context';
 
 describe('AuthModule (e2e)', () => {
@@ -26,7 +27,8 @@ describe('AuthModule (e2e)', () => {
       .send({ email: admin.email, password: admin.password })
       .expect(200);
 
-    expect(response.body.access_token).toEqual(expect.any(String));
+    const body = responseBody<{ access_token: string }>(response.body);
+    expect(body.access_token).toEqual(expect.any(String));
   });
 
   it('POST /auth/login rejeita credenciais incorretas', async () => {

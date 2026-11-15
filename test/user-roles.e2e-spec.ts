@@ -6,6 +6,7 @@ import {
   createAdminFixture,
   createE2eContext,
   E2eContext,
+  responseBody,
 } from './e2e-context';
 
 describe('UserRolesModule (e2e)', () => {
@@ -45,7 +46,7 @@ describe('UserRolesModule (e2e)', () => {
         password: 'Senha-E2E-123',
       })
       .expect(201);
-    targetUserId = newUser.body.id;
+    targetUserId = responseBody<{ id: number }>(newUser.body).id;
 
     const adminRole = await context.prisma.roles.findUniqueOrThrow({
       where: { name: 'ADM' },
@@ -58,14 +59,17 @@ describe('UserRolesModule (e2e)', () => {
       .set(bearer(admin.token))
       .send(dto)
       .expect(201);
-    createdUserRoleId = created.body.id;
+    createdUserRoleId = responseBody<{ id: number }>(created.body).id;
 
     const found = await request(context.app.getHttpServer())
       .get(`/user-roles/${createdUserRoleId}`)
       .set(bearer(admin.token))
       .expect(200);
 
-    expect(found.body).toMatchObject({ id: createdUserRoleId, ...dto });
+    expect(responseBody(found.body)).toMatchObject({
+      id: createdUserRoleId,
+      ...dto,
+    });
   });
 
   it('POST /user-roles rejeita identificadores que não sejam inteiros', async () => {
