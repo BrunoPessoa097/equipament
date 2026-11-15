@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateStorageDto } from './dto/create-storage.dto';
 import { UpdateStorageDto } from './dto/update-storage.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,13 +7,17 @@ import { PaginacaoInterface } from '../config/paginacao.interface';
 
 @Injectable()
 export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createStorageDto: CreateStorageDto): Promise<StorageInterface> {
-    return await this.prisma.storage.create({
+    const storage = await this.prisma.storage.create({
       data: createStorageDto,
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Local de armazenamento cadastrado. ID: ${storage.id}`);
+    return storage;
   }
 
   async findAll(
@@ -34,6 +38,9 @@ export class StorageService {
 
     const numPaginas: number = Math.ceil(total / take);
 
+    this.logger.debug(
+      `Consulta de locais de armazenamento realizada. Página: ${page}, Total: ${total}`,
+    );
     return {
       dados,
       pagina: page,
@@ -44,27 +51,42 @@ export class StorageService {
   }
 
   async findOne(id: number): Promise<StorageInterface | null> {
-    return this.prisma.storage.findFirst({
+    const storage = await this.prisma.storage.findFirst({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.debug(
+      storage
+        ? `Local de armazenamento encontrado. ID: ${id}`
+        : `Local de armazenamento não encontrado. ID: ${id}`,
+    );
+
+    return storage;
   }
 
   async update(
     id: number,
     updateStorageDto: UpdateStorageDto,
   ): Promise<StorageInterface> {
-    return this.prisma.storage.update({
+    const storage = await this.prisma.storage.update({
       where: { id },
       data: updateStorageDto,
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Local de armazenamento atualizado. ID: ${storage.id}`);
+
+    return storage;
   }
 
   async remove(id: number): Promise<StorageInterface> {
-    return this.prisma.storage.delete({
+    const storage = await this.prisma.storage.delete({
       where: { id },
       omit: { createdAt: true, updatedAt: true },
     });
+
+    this.logger.log(`Local de armazenamento excluído. ID: ${storage.id}`);
+    return storage;
   }
 }
