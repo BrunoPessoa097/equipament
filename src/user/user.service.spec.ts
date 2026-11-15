@@ -23,19 +23,22 @@ describe('UserService', () => {
     },
   };
 
+  const transaction = {
+    roles: {
+      findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 1 }),
+    },
+    user: mockPrismaService.user,
+    userRoles: {
+      create: jest.fn().mockResolvedValue({}),
+    },
+  };
+
   const defaultOmit = { createdAt: true, updatedAt: true, password: true };
 
   beforeEach(async () => {
-    mockPrismaService.$transaction.mockImplementation((callback) =>
-      callback({
-        roles: {
-          findUniqueOrThrow: jest.fn().mockResolvedValue({ id: 1 }),
-        },
-        user: mockPrismaService.user,
-        userRoles: {
-          create: jest.fn().mockResolvedValue({}),
-        },
-      }),
+    mockPrismaService.$transaction.mockImplementation(
+      (callback: (tx: typeof transaction) => Promise<unknown>) =>
+        callback(transaction),
     );
 
     const module: TestingModule = await Test.createTestingModule({
