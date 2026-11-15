@@ -1,3 +1,4 @@
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -12,6 +13,8 @@ import { EquipamentModule } from './equipament/equipament.module';
 import { StorageModule } from './storage/storage.module';
 import { StorageEquipUserModule } from './storage-equip-user/storage-equip-user.module';
 import { AuthModule } from './auth/auth.module';
+import { MetricsModule } from './metrics/metrics.module';
+import { MetricsInterceptor } from './metrics/metrics/metrics.interceptor';
 
 @Module({
   imports: [
@@ -27,6 +30,7 @@ import { AuthModule } from './auth/auth.module';
     StorageModule,
     StorageEquipUserModule,
     AuthModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -34,6 +38,10 @@ import { AuthModule } from './auth/auth.module';
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
   ],
 })

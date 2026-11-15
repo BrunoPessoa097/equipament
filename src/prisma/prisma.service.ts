@@ -28,7 +28,7 @@ export class PrismaService
   }
 
   async onModuleDestroy(): Promise<void> {
-    this.logger.error(`ORM não funcionando`);
     await this.$disconnect();
+    this.logger.log('Conexão com o banco de dados encerrada.');
   }
 }
