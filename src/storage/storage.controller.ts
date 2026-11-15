@@ -7,19 +7,27 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { CreateStorageDto } from './dto/create-storage.dto';
 import { UpdateStorageDto } from './dto/update-storage.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('storage')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('PUBLIC', 'ADM')
+@ApiBearerAuth()
 @ApiTags('Storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
@@ -76,6 +84,7 @@ export class StorageController {
   }
 
   @Delete(':id')
+  @Roles('ADM')
   @ApiOperation({ summary: 'Remover uma armazenamento' })
   @ApiParam({
     name: 'id',

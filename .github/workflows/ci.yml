@@ -50,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24.9.0
           cache: pnpm
 
       - name: Install dependencies
@@ -62,11 +62,26 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
 
+      - name: Create test database
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d postgres \
+            -c "CREATE DATABASE equipament_test_db;"
+
       - name: Run database migrations
         run: pnpm exec prisma migrate deploy
 
       - name: Run Prisma Seeds
         run: pnpm exec prisma db seed
+
+      - name: Run test database migrations
+        run: pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
+
+      - name: Seed test database
+        run: pnpm exec prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/equipament_test_db?schema=public
 
       - name: Run ESLint
         run: pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
@@ -76,6 +91,14 @@ jobs:
 
       - name: Run unit tests
         run: pnpm run test --runInBand
+
+      - name: Configure test environment
+        run: |
+          printf 'POSTGRES_USER=postgres\n' >> .env
+          printf 'POSTGRES_PASSWORD=postgres\n' >> .env
+          printf 'POSTGRES_DB=equipament_test_db\n' >> .env
+          printf 'JWT_SECRET=test-secret-for-ci\n' >> .env
+          printf 'DATABASE_TEST_URL=postgresql://postgres:postgres@localhost:5432/equipament_test_db\n' >> .env
 
       - name: Run e2e tests
         run: pnpm run test:e2e

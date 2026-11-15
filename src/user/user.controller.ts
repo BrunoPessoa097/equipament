@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,7 +18,11 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('user')
 @ApiTags('User')
@@ -34,6 +39,9 @@ export class UserController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todas os usuários' })
   @ApiResponse({
     status: 200,
@@ -44,6 +52,9 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Buscar um usuário pelo ID' })
   @ApiParam({
     name: 'id',
@@ -57,6 +68,9 @@ export class UserController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PUBLIC', 'ADM')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar uma role' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador da role' })
   @ApiBody({ type: UpdateUserDto })
@@ -70,6 +84,9 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADM')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover uma role' })
   @ApiParam({ name: 'id', type: Number, description: 'Identificador da role' })
   @ApiResponse({ status: 200, description: 'Role removida com sucesso.' })

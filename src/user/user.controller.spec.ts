@@ -1,3 +1,10 @@
+jest.mock('../auth/jwt-auth.guard', () => ({
+  JwtAuthGuard: class JwtAuthGuard {},
+}));
+jest.mock('../common/guards/roles.guard', () => ({
+  RolesGuard: class RolesGuard {},
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   ConflictException,
@@ -241,7 +248,7 @@ describe('UserController', () => {
 
       mockUserService.remove.mockResolvedValue(mockDeletedUser);
 
-      const result = await controller.remove(1 as unknown as string);
+      const result = await controller.remove('1');
 
       expect(result).toEqual(mockDeletedUser);
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
@@ -252,9 +259,7 @@ describe('UserController', () => {
       const notFoundError = new NotFoundException('Usuário não encontrado');
       mockUserService.remove.mockRejectedValue(notFoundError);
 
-      await expect(controller.remove(999 as unknown as string)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(controller.remove('999')).rejects.toThrow(NotFoundException);
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
       expect(mockUserService.remove).toHaveBeenCalledWith(999);
     });
@@ -263,7 +268,7 @@ describe('UserController', () => {
       const dbError = new InternalServerErrorException('Erro ao remover');
       mockUserService.remove.mockRejectedValue(dbError);
 
-      await expect(controller.remove(1 as unknown as string)).rejects.toThrow(
+      await expect(controller.remove('1')).rejects.toThrow(
         InternalServerErrorException,
       );
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
@@ -469,7 +474,7 @@ describe('UserController', () => {
 
       mockUserService.remove.mockResolvedValue(mockDeletedUser);
 
-      const result = await controller.remove(1 as unknown as string);
+      const result = await controller.remove('1');
 
       expect(result).toEqual(mockDeletedUser);
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
@@ -480,9 +485,7 @@ describe('UserController', () => {
       const notFoundError = new NotFoundException('Usuário não encontrado');
       mockUserService.remove.mockRejectedValue(notFoundError);
 
-      await expect(controller.remove(999 as unknown as string)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(controller.remove('999')).rejects.toThrow(NotFoundException);
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);
       expect(mockUserService.remove).toHaveBeenCalledWith(999);
     });
@@ -491,7 +494,7 @@ describe('UserController', () => {
       const dbError = new InternalServerErrorException('Erro ao remover');
       mockUserService.remove.mockRejectedValue(dbError);
 
-      await expect(controller.remove(1 as unknown as string)).rejects.toThrow(
+      await expect(controller.remove('1')).rejects.toThrow(
         InternalServerErrorException,
       );
       expect(mockUserService.remove).toHaveBeenCalledTimes(1);

@@ -1,3 +1,10 @@
+jest.mock('../auth/jwt-auth.guard', () => ({
+  JwtAuthGuard: class JwtAuthGuard {},
+}));
+jest.mock('../common/guards/roles.guard', () => ({
+  RolesGuard: class RolesGuard {},
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { StorageController } from './storage.controller';
 import { StorageService } from './storage.service';

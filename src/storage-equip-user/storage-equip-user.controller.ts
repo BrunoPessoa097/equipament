@@ -7,19 +7,27 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { StorageEquipUserService } from './storage-equip-user.service';
 import { CreateStorageEquipUserDto } from './dto/create-storage-equip-user.dto';
 import { UpdateStorageEquipUserDto } from './dto/update-storage-equip-user.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('storage-equip-user')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('PUBLIC', 'ADM')
+@ApiBearerAuth()
 @ApiTags('Storage Equipamento User')
 export class StorageEquipUserController {
   constructor(
@@ -91,6 +99,7 @@ export class StorageEquipUserController {
   }
 
   @Delete(':id')
+  @Roles('ADM')
   @ApiOperation({ summary: 'Remover um estoque equipamento e do usuário' })
   @ApiParam({
     name: 'id',
