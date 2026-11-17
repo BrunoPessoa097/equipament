@@ -1,4 +1,5 @@
 # Equipament
+## Projeto B
 
 API REST para gerenciamento de equipamentos, usuários, papéis de acesso e locais de armazenamento. O projeto usa NestJS, TypeScript, Prisma ORM e PostgreSQL.
 
